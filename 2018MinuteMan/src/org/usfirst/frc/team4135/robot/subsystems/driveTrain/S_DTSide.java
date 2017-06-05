@@ -13,7 +13,6 @@ public class S_DTSide extends Subsystem implements SpeedController {
 
 	private static final int MOTOR_NUM = 3;
 	private CANTalon[] motorControllers = new CANTalon[MOTOR_NUM];
-    private boolean[]  motorInversions = new boolean[MOTOR_NUM];
     private Encoder encoder;
     private boolean isSideInverted = false;
     private double  currentSpeed = 0;
@@ -22,8 +21,8 @@ public class S_DTSide extends Subsystem implements SpeedController {
     public S_DTSide(int[] motorIDs, boolean[] motorInversions, Encoder encoder) {
         for(int motorNum = 0; motorNum < MOTOR_NUM; motorNum++){
         	this.motorControllers[motorNum] = new CANTalon(motorIDs[motorNum]);
+        	this.motorControllers[motorNum].setInverted(motorInversions[motorNum]);
         }
-        this.motorInversions = motorInversions;
         this.encoder = encoder;
     }
     
@@ -48,7 +47,7 @@ public class S_DTSide extends Subsystem implements SpeedController {
      */
     public void set(double speed) {
     	for(int motorNum = 0; motorNum < MOTOR_NUM; motorNum++){
-        	motorControllers[motorNum].set(speed * (motorInversions[motorNum] ? -1 : 1));
+        	motorControllers[motorNum].set(speed);
         }
     	currentSpeed = speed;
     }
@@ -57,10 +56,7 @@ public class S_DTSide extends Subsystem implements SpeedController {
      * Halt motor
      */
     public void halt() {
-    	for(int motorNum = 0; motorNum < MOTOR_NUM; motorNum++){
-        	motorControllers[motorNum].set(0);
-        }
-    	currentSpeed = 0;
+    	set(0);
     }
 
     public double getDistToTurn() {
@@ -88,7 +84,7 @@ public class S_DTSide extends Subsystem implements SpeedController {
     public void setInverted(boolean isInverted){
     	if(isInverted != isSideInverted){
     		for(int motorNum = 0; motorNum < MOTOR_NUM; motorNum++){
-        		motorInversions[motorNum] = !motorInversions[motorNum];
+    			motorControllers[motorNum].setInverted(!motorControllers[motorNum].getInverted());
         	}
     		isSideInverted = isInverted;
     	}
@@ -105,7 +101,7 @@ public class S_DTSide extends Subsystem implements SpeedController {
 	
 	public void setToBrake(boolean statement){
 		for(int motorNum = 0; motorNum < MOTOR_NUM; motorNum++){
-			this.motorControllers[motorNum].enableBrakeMode(statement);
+			motorControllers[motorNum].enableBrakeMode(statement);
 	    }
 	}
 
